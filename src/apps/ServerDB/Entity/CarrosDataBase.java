@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
+import apps.Interfaces.ServerDB.DBCarrosInterface;
 import apps.Records.Carro;
 import apps.Categoria;
 
@@ -12,7 +13,7 @@ import apps.Categoria;
  * Classe que representa um conjunto de carros usando uma hashTable.
  * implementa o RMI para ser acessível remotamente.
  */
-public class CarrosDataBase {
+public class CarrosDataBase implements DBCarrosInterface {
     private final Hashtable<String, Carro> carros;
 
     public CarrosDataBase() throws RemoteException {
