@@ -1,4 +1,4 @@
-package apps.Interfaces;
+package apps.Interfaces.ServerDB;
 
 import apps.Categoria;
 import apps.Records.Carro;
@@ -10,7 +10,7 @@ import java.util.LinkedList;
 /**
  * Interface para representar um conjunto de carros e suas operações.
  */
-public interface CarrosInterface extends Remote {
+public interface DBCarrosInterface extends Remote {
     /**
      * Adiciona um carro à coleção.
      * @param carro O carro a ser adicionado.
@@ -61,11 +61,4 @@ public interface CarrosInterface extends Remote {
      * @return A quantidade de carros na coleção.
      */
     int getQuantidade() throws RemoteException;
-
-    /**
-     * Verifica se o servidor está ativo.
-     * @return true, se não houver problemas.
-     * @throws RemoteException
-     */
-    boolean isAlive() throws RemoteException;
 }

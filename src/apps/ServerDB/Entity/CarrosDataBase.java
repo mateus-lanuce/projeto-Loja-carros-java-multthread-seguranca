@@ -1,12 +1,10 @@
 package apps.ServerDB.Entity;
 
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
-import apps.Interfaces.CarrosInterface;
 import apps.Records.Carro;
 import apps.Categoria;
 
@@ -14,10 +12,10 @@ import apps.Categoria;
  * Classe que representa um conjunto de carros usando uma hashTable.
  * implementa o RMI para ser acessível remotamente.
  */
-public class CarrosHashMap {
+public class CarrosDataBase {
     private final Hashtable<String, Carro> carros;
 
-    public CarrosHashMap() throws RemoteException {
+    public CarrosDataBase() throws RemoteException {
         carros = new Hashtable<>();
     }
 

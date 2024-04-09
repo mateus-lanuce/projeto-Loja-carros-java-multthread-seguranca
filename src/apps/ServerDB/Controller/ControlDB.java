@@ -1,31 +1,38 @@
 package apps.ServerDB.Controller;
 
 import apps.Categoria;
-import apps.Interfaces.CarrosInterface;
+import apps.Interfaces.ServerDB.ServerDBInterface;
 import apps.Records.Carro;
-import apps.ServerDB.Entity.CarrosHashMap;
+import apps.ServerDB.Entity.CarrosDataBase;
 
 import java.io.Serial;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Arrays;
 import java.util.LinkedList;
 
-public class ControlDB extends UnicastRemoteObject implements CarrosInterface {
+public class ControlDB extends UnicastRemoteObject implements ServerDBInterface {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    LinkedList<CarrosInterface> replicDBsTotal;
-    LinkedList<CarrosInterface> replicDBsConnected;
+    LinkedList<ServerDBInterface> replicDBsTotal;
+    LinkedList<ServerDBInterface> replicDBsConnected;
 
-    CarrosHashMap carrosHashMap;
+    final CarrosDataBase carrosDataBase;
 
-    protected ControlDB(LinkedList<CarrosInterface> replicas) throws RemoteException {
+    public ControlDB(LinkedList<ServerDBInterface> replicas) throws RemoteException {
         super();
         this.replicDBsTotal = replicas;
         this.replicDBsConnected = new LinkedList<>();
         validateReplicas();
-        carrosHashMap = new CarrosHashMap();
+        carrosDataBase = new CarrosDataBase();
+    }
+
+    public ControlDB() throws RemoteException {
+        super();
+        this.replicDBsTotal = new LinkedList<>();
+        this.replicDBsConnected = new LinkedList<>();
+        validateReplicas();
+        carrosDataBase = new CarrosDataBase();
     }
 
     /**
@@ -50,9 +57,9 @@ public class ControlDB extends UnicastRemoteObject implements CarrosInterface {
      * mas deve ser feito de forma assíncrona nas demais replicas.
      * @param carro O carro a ser adicionado.
      */
-    private Carro sync_adicionar(Carro carro) throws IllegalArgumentException {
+    private synchronized Carro sync_adicionar(Carro carro) throws IllegalArgumentException {
         //adiciona o carro na replica local
-        Carro carroLocal = carrosHashMap.adicionar(carro);
+        Carro carroLocal = carrosDataBase.adicionar(carro);
 
         // valida as replicas conectadas
         validateReplicas();
@@ -93,11 +100,12 @@ public class ControlDB extends UnicastRemoteObject implements CarrosInterface {
         return carroLocal;
     }
 
-    public LinkedList<Carro> sync_removerPorNome(String nome) throws RemoteException{
+    private synchronized LinkedList<Carro> sync_removerPorNome(String nome) throws RemoteException {
         //remove o carro na replica local
-        LinkedList<Carro> carros = carrosHashMap.removerPorNome(nome);
+        LinkedList<Carro> carros = carrosDataBase.removerPorNome(nome);
 
         validateReplicas();
+
         Thread t = new Thread(() -> {
             try {
                 //TODO: rever a logica para o caso de falha na primeira replica
@@ -132,11 +140,12 @@ public class ControlDB extends UnicastRemoteObject implements CarrosInterface {
 
         return carros;
     }
-    public Carro sync_remover(String renavam) throws IllegalArgumentException, RemoteException{
+    private synchronized Carro sync_remover(String renavam) throws IllegalArgumentException, RemoteException {
         //remove o carro na replica local
-        Carro carroLocal = carrosHashMap.remover(renavam);
+        Carro carroLocal = carrosDataBase.remover(renavam);
 
         validateReplicas();
+
         Thread t = new Thread(() -> {
             try {
                 //TODO: rever a logica para o caso de falha na primeira replica
@@ -172,9 +181,9 @@ public class ControlDB extends UnicastRemoteObject implements CarrosInterface {
         return carroLocal;
     }
 
-    public Carro sync_alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException{
+    private synchronized Carro sync_alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
         //adiciona o carro na replica local
-        Carro carroLocal = carrosHashMap.alterar(renavam, carro);
+        Carro carroLocal = carrosDataBase.alterar(renavam, carro);
 
         // valida as replicas conectadas
         validateReplicas();
@@ -222,40 +231,37 @@ public class ControlDB extends UnicastRemoteObject implements CarrosInterface {
     }
     @Override
     public Carro remover(String renavam) throws IllegalArgumentException, RemoteException {
-        return null;
+        return sync_remover(renavam);
     }
 
     @Override
     public LinkedList<Carro> removerPorNome(String nome) throws RemoteException {
-        return null;
+        return sync_removerPorNome(nome);
     }
-
-
 
     @Override
     public LinkedList<Carro> getCarros(Categoria categoria) throws RemoteException {
-
-        return carrosHashMap.getCarros(categoria);
+        return carrosDataBase.getCarros(categoria);
     }
 
     @Override
     public LinkedList<Carro> getCarrosByNome(String nome) throws RemoteException {
-        return carrosHashMap.getCarrosByNome(nome);
+        return carrosDataBase.getCarrosByNome(nome);
     }
 
     @Override
     public Carro getCarroByRenavam(String renavam) throws RemoteException {
-        return carrosHashMap.getCarroByRenavam(renavam);
+        return carrosDataBase.getCarroByRenavam(renavam);
     }
 
     @Override
     public Carro alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
-        return null;
+        return sync_alterar(renavam, carro);
     }
 
     @Override
     public int getQuantidade() throws RemoteException {
-        return carrosHashMap.getQuantidade();
+        return carrosDataBase.getQuantidade();
     }
 
     @Override

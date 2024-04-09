@@ -1,10 +1,7 @@
 package apps.ServerDB;
 
-import apps.ServerDB.Entity.CarrosHashMap;
+import apps.ServerDB.Controller.ControlDB;
 
-import java.net.MalformedURLException;
-import java.rmi.Naming;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -14,7 +11,7 @@ public class ServerDB {
         try {
 
             //cria o objeto remoto
-            CarrosHashMap carros = new CarrosHashMap();
+            ControlDB carros = new ControlDB();
 
             Registry registry = LocateRegistry.createRegistry(1099);
 

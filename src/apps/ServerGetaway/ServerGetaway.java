@@ -1,24 +1,22 @@
 package apps.ServerGetaway;
 
 import apps.Categoria;
-import apps.Interfaces.CarrosInterface;
+import apps.Interfaces.ServerDB.DBCarrosInterface;
 import apps.Interfaces.ServerGetawayInterface;
 import apps.Interfaces.UsersInterface;
 import apps.Records.Carro;
 import apps.Records.User;
 
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
 
 public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayInterface {
 
     private Registry registryDB;
-    private CarrosInterface serverDB;
+    private DBCarrosInterface serverDB;
 
     private Registry registryAuth;
     private UsersInterface serverAuth;
@@ -132,7 +130,7 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     private void connectDB() {
         try {
             registryDB = LocateRegistry.getRegistry(1099);
-            serverDB = (CarrosInterface) registryDB.lookup("Carros");
+            serverDB = (DBCarrosInterface) registryDB.lookup("Carros");
             System.out.println("Conexão com o servidor de banco de dados estabelecida");
         } catch (Exception e) {
             e.printStackTrace();
