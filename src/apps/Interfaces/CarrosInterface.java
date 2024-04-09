@@ -61,4 +61,11 @@ public interface CarrosInterface extends Remote {
      * @return A quantidade de carros na coleção.
      */
     int getQuantidade() throws RemoteException;
+
+    /**
+     * Verifica se o servidor está ativo.
+     * @return true, se não houver problemas.
+     * @throws RemoteException
+     */
+    boolean isAlive() throws RemoteException;
 }

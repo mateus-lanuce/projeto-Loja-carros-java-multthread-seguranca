@@ -14,17 +14,14 @@ import apps.Categoria;
  * Classe que representa um conjunto de carros usando uma hashTable.
  * implementa o RMI para ser acessível remotamente.
  */
-public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterface {
-
-    private static final long serialVersionUID = 1L;
+public class CarrosHashMap {
     private final Hashtable<String, Carro> carros;
 
     public CarrosHashMap() throws RemoteException {
-        super();
         carros = new Hashtable<>();
     }
 
-    @Override
+    
     public Carro adicionar(Carro carro) throws IllegalArgumentException {
 
         //verifica se o carro já existe
@@ -37,7 +34,7 @@ public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterfac
         return carros.put(carro.renavam(), carro);
     }
 
-    @Override
+    
     public Carro remover(String renavam) throws IllegalArgumentException {
 
         //verifica se o carro existe
@@ -50,7 +47,7 @@ public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterfac
         return carros.remove(renavam);
     }
 
-    @Override
+    
     public LinkedList<Carro> removerPorNome(String nome) {
         LinkedList<Carro> carrosNome = new LinkedList<>();
         carros.values().stream().filter(carro -> carro.nome().equals(nome)).forEach(carrosNome::add);
@@ -64,7 +61,7 @@ public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterfac
         return carrosNome;
     }
 
-    @Override
+    
     public LinkedList<Carro> getCarros(Categoria categoria) {
         LinkedList<Carro> carrosCategoria = new LinkedList<>();
 
@@ -87,7 +84,7 @@ public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterfac
         return carrosCategoria;
     }
 
-    @Override
+    
     public LinkedList<Carro> getCarrosByNome(String nome) {
         LinkedList<Carro> carrosNome = new LinkedList<>();
         carros.values().stream().filter(carro -> carro.nome().equals(nome)).forEach(carrosNome::add);
@@ -97,12 +94,12 @@ public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterfac
         return carrosNome;
     }
 
-    @Override
+    
     public Carro getCarroByRenavam(String renavam) {
         return carros.get(renavam);
     }
 
-    @Override
+    
     public Carro alterar(String renavam, Carro carro) throws IllegalArgumentException {
 
         //verifica se o carro existe
@@ -113,7 +110,7 @@ public class CarrosHashMap extends UnicastRemoteObject implements CarrosInterfac
         return carros.put(renavam, carro);
     }
 
-    @Override
+    
     public int getQuantidade() {
         return carros.size();
     }
