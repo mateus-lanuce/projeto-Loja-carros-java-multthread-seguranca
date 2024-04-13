@@ -19,67 +19,57 @@ public class ModelCarrosLoja implements DBCarrosInterface {
     private ServerDBInterface serverDBPrincipal; //leitura
     private ServerDBInterface serverDBLider; //escrita
 
-    public ModelCarrosLoja(Registry connection, Registry connectionLider) {
+    public ModelCarrosLoja(ServerDBInterface connection, ServerDBInterface connectionLider) {
+
         this.changeConnectedDB(connection, connectionLider);
     }
 
     @Override
     public Carro adicionar(Carro carro) throws IllegalArgumentException, RemoteException {
-        return null;
+
+        return serverDBLider.adicionar(carro);
     }
 
     @Override
     public Carro remover(String renavam) throws IllegalArgumentException, RemoteException {
-        return null;
+        return serverDBLider.remover(renavam);
     }
 
     @Override
     public LinkedList<Carro> removerPorNome(String nome) throws RemoteException {
-        return null;
+        return serverDBLider.removerPorNome(nome);
     }
 
     @Override
     public LinkedList<Carro> getCarros(Categoria categoria) throws RemoteException {
-        return null;
+        return serverDBPrincipal.getCarros(categoria);
     }
 
     @Override
     public LinkedList<Carro> getCarrosByNome(String nome) throws RemoteException {
-        return null;
+        return serverDBPrincipal.getCarrosByNome(nome);
     }
 
     @Override
     public Carro getCarroByRenavam(String renavam) throws RemoteException {
-        return null;
+        return serverDBPrincipal.getCarroByRenavam(renavam);
     }
 
     @Override
     public Carro alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
-        return null;
+        return serverDBLider.alterar(renavam, carro);
     }
 
     @Override
     public int getQuantidade() throws RemoteException {
-        return 0;
+        return serverDBPrincipal.getQuantidade();
     }
 
-    public void changeConnectedDB(Registry connection, Registry connectionLider) {
-        this.connectToDB(connection, connectionLider);
+    public void changeConnectedDB(ServerDBInterface connection, ServerDBInterface connectionLider) {
+        serverDBPrincipal = connection;
+        serverDBLider = connectionLider;
     }
 
-    private void connectToDB(Registry connectionPrincipal, Registry connectionLider) {
 
-        try {
-            // Pegar o registro do servidor de banco de dados principal
-            this.serverDBPrincipal = (ServerDBInterface) connectionPrincipal.lookup("NomeconnectionPrincipal");
-
-            // Pegar o registro do servidor de banco de dados líder
-            this.serverDBLider = (ServerDBInterface) connectionLider.lookup("NomeServidorLider");
-
-            System.out.println("Conectado com o servidor de gateway");
-        } catch (RemoteException | NotBoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 }

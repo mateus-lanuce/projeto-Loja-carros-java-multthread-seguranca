@@ -8,5 +8,6 @@ public record IpPort(String ip, int port) {
         if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("Porta inválida");
         }
+
     }
 }
