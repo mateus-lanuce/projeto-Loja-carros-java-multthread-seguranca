@@ -19,8 +19,8 @@ public class ModelCarrosLoja implements DBCarrosInterface {
     private ServerDBInterface serverDBPrincipal; //leitura
     private ServerDBInterface serverDBLider; //escrita
 
-    public ModelCarrosLoja(Registry connection) {
-        this.changeConnectedDB(connection);
+    public ModelCarrosLoja(Registry connection, Registry connectionLider) {
+        this.changeConnectedDB(connection, connectionLider);
     }
 
     @Override
@@ -63,23 +63,23 @@ public class ModelCarrosLoja implements DBCarrosInterface {
         return 0;
     }
 
-    public void changeConnectedDB(Registry connection) {
-        this.connectToDB(connection, );
+    public void changeConnectedDB(Registry connection, Registry connectionLider) {
+        this.connectToDB(connection, connectionLider);
     }
 
     private void connectToDB(Registry connectionPrincipal, Registry connectionLider) {
-        // se conectar com o servidor de banco de dados
-        try {
-            // pegar o registro do servidor de banco de dados
 
-            //TODO: alterar o nome do servidor de banco de dados quando tiver pronto
-            this.serverDBPrincipal = (ServerDBInterface) connectionPrincipal.lookup("Getaway");
+        try {
+            // Pegar o registro do servidor de banco de dados principal
+            this.serverDBPrincipal = (ServerDBInterface) connectionPrincipal.lookup("NomeconnectionPrincipal");
+
+            // Pegar o registro do servidor de banco de dados líder
+            this.serverDBLider = (ServerDBInterface) connectionLider.lookup("NomeServidorLider");
 
             System.out.println("Conectado com o servidor de gateway");
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        } catch (NotBoundException e) {
+        } catch (RemoteException | NotBoundException e) {
             throw new RuntimeException(e);
         }
     }
+
 }

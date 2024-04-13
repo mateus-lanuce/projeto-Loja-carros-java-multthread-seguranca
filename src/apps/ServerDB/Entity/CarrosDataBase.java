@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 
 import apps.Interfaces.ServerDB.DBCarrosInterface;
 import apps.Records.Carro;
@@ -14,10 +15,10 @@ import apps.Categoria;
  * implementa o RMI para ser acessível remotamente.
  */
 public class CarrosDataBase implements DBCarrosInterface {
-    private final Hashtable<String, Carro> carros;
+    private final ConcurrentHashMap<String, Carro> carros;
 
     public CarrosDataBase() throws RemoteException {
-        carros = new Hashtable<>();
+        carros = new ConcurrentHashMap<>();
     }
 
     
