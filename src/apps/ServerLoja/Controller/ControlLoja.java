@@ -13,10 +13,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ControlLoja implements ServerLojaInterface {
+public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterface {
     private ModelCarrosLoja model;
 
     LinkedList<ServerDBInterface> replicDBsConnected;
@@ -26,9 +27,12 @@ public class ControlLoja implements ServerLojaInterface {
     int idPreferencia;
     int currentConection;
 
-    public ControlLoja(ArrayList<IpPort> ports, int idPreferencia) {
+    public ControlLoja(ArrayList<IpPort> ports, int idPreferencia) throws RemoteException {
+        super();
         this.connectDB(ports);
         this.idPreferencia = idPreferencia;
+        this.replicDBsConnected = new LinkedList<>();
+        this.replicDBsTotal = new LinkedList<>();
         validateReplicas();
     }
 

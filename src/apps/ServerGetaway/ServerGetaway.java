@@ -5,12 +5,14 @@ import apps.Interfaces.ServerDB.DBCarrosInterface;
 import apps.Interfaces.ServerGetawayInterface;
 import apps.Interfaces.UsersInterface;
 import apps.Records.Carro;
+import apps.Records.IpPort;
 import apps.Records.User;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayInterface {
