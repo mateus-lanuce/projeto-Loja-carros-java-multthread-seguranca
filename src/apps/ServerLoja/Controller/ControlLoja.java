@@ -8,6 +8,8 @@ import apps.Records.Carro;
 import apps.Records.IpPort;
 import apps.ServerLoja.Model.ModelCarrosLoja;
 
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -25,14 +27,14 @@ public class ControlLoja implements ServerLojaInterface {
     int currentConection;
 
     public ControlLoja(ArrayList<IpPort> ports, int idPreferencia) {
-        connectDB(ports);
+        this.connectDB(ports);
+        this.idPreferencia = idPreferencia;
         validateReplicas();
-        this.model = new ModelCarrosLoja(replicDBsConnected.get(newMainConnection()), replicDBsConnected.get(0));
     }
 
     private void validateReplicas() {
-        replicDBsConnected.clear();
-        replicDBsTotal.forEach(replica -> {
+        this.replicDBsConnected.clear();
+        this.replicDBsTotal.forEach(replica -> {
             try {
                 if (replica.isAlive()) {
                     replicDBsConnected.add(replica);
@@ -41,12 +43,22 @@ public class ControlLoja implements ServerLojaInterface {
                 e.printStackTrace();
             }
         });
-        model.changeConnectedDB(replicDBsConnected.get(newMainConnection()), replicDBsConnected.get(0));
+
+        if (replicDBsConnected.isEmpty()) {
+            System.out.println("Nenhuma replica disponivel");
+        } else {
+            if (this.model == null) {
+                this.model = new ModelCarrosLoja(replicDBsConnected.get(newMainConnection()), replicDBsConnected.get(0));
+                return;
+            }
+            this.model.changeConnectedDB(replicDBsConnected.get(newMainConnection()), replicDBsConnected.get(0));
+        }
+
     }
 
     private int newMainConnection(){
         if(idPreferencia > replicDBsConnected.size()){
-            currentConection = replicDBsConnected.size()-1;
+            this.currentConection = replicDBsConnected.size() - 1;
             return  currentConection;
         }
         return idPreferencia;
@@ -60,7 +72,8 @@ public class ControlLoja implements ServerLojaInterface {
                 ServerDBInterface serverDB = (ServerDBInterface) registryDB.lookup("Carros");
                 replicDBsTotal.add(serverDB);
                 System.out.println("Conexão com o servidor "+ port.ip() + " feita na porta " + port.port());
-            } catch (Exception e) {
+            } catch (RemoteException | NotBoundException e) {
+                System.out.println("Erro ao conectar com o servidor "+ port.ip() + " na porta " + port.port());
                 e.printStackTrace();
             }
         }
@@ -94,7 +107,7 @@ public class ControlLoja implements ServerLojaInterface {
 
     @Override
     public Carro getCarroByRenavam(String renavam) throws RemoteException {
-        return getCarroByRenavam(renavam);
+        return model.getCarroByRenavam(renavam);
     }
 
     @Override

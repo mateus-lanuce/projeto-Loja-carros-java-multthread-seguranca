@@ -3,11 +3,16 @@ package apps.ServerDB.Controller;
 import apps.Categoria;
 import apps.Interfaces.ServerDB.ServerDBInterface;
 import apps.Records.Carro;
+import apps.Records.IpPort;
 import apps.ServerDB.Entity.CarrosDataBase;
 
 import java.io.Serial;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ControlDB extends UnicastRemoteObject implements ServerDBInterface {
@@ -19,11 +24,12 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
 
     final CarrosDataBase carrosDataBase;
 
-    public ControlDB(LinkedList<ServerDBInterface> replicas) throws RemoteException {
+    public ControlDB(ArrayList<IpPort> ports) throws RemoteException {
         super();
-        this.replicDBsTotal = replicas;
+        this.replicDBsTotal = new LinkedList<>();
         this.replicDBsConnected = new LinkedList<>();
-        validateReplicas();
+        this.connectDB(ports);
+        this.validateReplicas();
         carrosDataBase = new CarrosDataBase();
     }
 
@@ -49,6 +55,25 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
                 e.printStackTrace();
             }
         });
+    }
+
+    /**
+     * função de conexão com as replicas
+     * @param ports lista de portas para conexão
+     */
+    private void connectDB(ArrayList<IpPort> ports) {
+        for (IpPort port : ports){
+            try {
+                Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());
+                ServerDBInterface serverDB = (ServerDBInterface) registryDB.lookup("Carros");
+                replicDBsTotal.add(serverDB);
+                System.out.println("Conexão com o servidor de bancos de dados: "+ port.ip() + " feita na porta " + port.port());
+            } catch (RemoteException | NotBoundException e) {
+                System.out.println("Erro ao conectar com o servidor "+ port.ip() + " na porta " + port.port());
+                e.printStackTrace();
+            }
+        }
+
     }
 
     /**
