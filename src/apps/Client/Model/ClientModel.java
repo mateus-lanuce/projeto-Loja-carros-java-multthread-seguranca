@@ -2,15 +2,16 @@ package apps.Client.Model;
 
 import apps.Categoria;
 import apps.Interfaces.ServerGetawayInterface;
+import apps.Interfaces.ServerLoja.ServerLojaInterface;
 import apps.Records.Carro;
+import apps.Records.IpPort;
 import apps.Records.User;
 
-import java.net.MalformedURLException;
-import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -19,26 +20,66 @@ import java.util.LinkedList;
 public class ClientModel {
 
     ServerGetawayInterface serverGetaway;
-    Registry registry;
 
-    public ClientModel() {
-        this.connect();
+    LinkedList<ServerGetawayInterface> replicGetawayConnected;
+    LinkedList<ServerGetawayInterface> replicGetawayTotal;
+    int idPreferencia;
+    int currentConection;
+
+    public ClientModel(ArrayList<IpPort> ports, int idPreferencia) {
+        this.replicGetawayConnected = new LinkedList<>();
+        this.replicGetawayTotal = new LinkedList<>();
+        this.connectGetaway(ports);
+        this.idPreferencia = idPreferencia;
+        validateReplicas();
     }
 
-    public void connect() {
-        // se conectar com o servidor de gateway que é o intermediário entre o cliente e os servidores de banco de dados e autenticação
-        try {
-            // pegar o registro do servidor de gateway
-            this.registry = LocateRegistry.getRegistry(1101);
-
-            this.serverGetaway = (ServerGetawayInterface) registry.lookup("Getaway");
-
-            System.out.println("Conectado com o servidor de gateway");
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        } catch (NotBoundException e) {
-            throw new RuntimeException(e);
+    private void connectGetaway(ArrayList<IpPort> ports) {
+        for (IpPort port : ports){
+            try {
+                Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());
+                ServerGetawayInterface serverGetaway = (ServerGetawayInterface) registryDB.lookup("Getaway");
+                replicGetawayTotal.add(serverGetaway);
+                System.out.println("Conexão com o servidor de getaway " + port.ip() + " feita na porta " + port.port());
+            } catch (RemoteException | NotBoundException e) {
+                System.out.println("Erro ao conectar com o servidor de getaway "+ port.ip() + " na porta " + port.port());
+                e.printStackTrace();
+            }
         }
+    }
+
+    private void validateReplicas() {
+        this.replicGetawayConnected.clear();
+        this.replicGetawayTotal.forEach(replica -> {
+            try {
+                if (replica.isAlive()) {
+                    replicGetawayConnected.add(replica);
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
+
+        if (replicGetawayConnected.isEmpty()) {
+            System.out.println("Nenhuma replica disponivel");
+        } else {
+            this.currentConection = newMainConnection();
+            this.serverGetaway = replicGetawayConnected.get(currentConection);
+        }
+
+    }
+
+    private int newMainConnection(){
+        if(idPreferencia > replicGetawayConnected.size()){
+
+            if (replicGetawayConnected.size() == 1) {
+                return 0;
+            }
+
+            this.currentConection = replicGetawayConnected.size() - 1;
+            return  currentConection;
+        }
+        return idPreferencia;
     }
 
     public User autenticar(String login, String senha) {

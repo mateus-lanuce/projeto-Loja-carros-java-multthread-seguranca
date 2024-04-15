@@ -3,6 +3,7 @@ package apps.ServerFirewall.Controller;
 import apps.Categoria;
 import apps.Interfaces.ServerDB.DBCarrosInterface;
 import apps.Interfaces.ServerDB.ServerDBInterface;
+import apps.Interfaces.ServerFirewall.ServerFirewallInterface;
 import apps.Interfaces.ServerGetawayInterface;
 import apps.Interfaces.ServerLoja.ServerLojaInterface;
 import apps.Interfaces.UsersInterface;
@@ -21,7 +22,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ControllerFirewall extends UnicastRemoteObject implements ServerGetawayInterface, ServerDBInterface {
+public class ControllerFirewall extends UnicastRemoteObject implements ServerFirewallInterface {
     private final ModelFirewall model;
 
     public ControllerFirewall(ArrayList<IpPort> portsDB, int idPreferenciaDB, IpPort AuthServer) throws RemoteException {
@@ -76,11 +77,11 @@ public class ControllerFirewall extends UnicastRemoteObject implements ServerGet
 
     @Override
     public User login(String email, String password) throws RemoteException {
-        return null;
+        return model.login(email, password);
     }
 
     @Override
     public void addUser(User user) throws RemoteException {
-
+        model.addUser(user);
     }
 }

@@ -14,7 +14,7 @@ public class ServerAuth {
             //cria o objeto remoto
             UsersInterface users = new Users();
 
-            Registry registry = LocateRegistry.createRegistry(1100);
+            Registry registry = LocateRegistry.createRegistry(1141);
 
             //registra o objeto remoto
             registry.rebind("Users", users);

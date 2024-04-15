@@ -15,7 +15,7 @@ import apps.Categoria;
  * implementa o RMI para ser acessível remotamente.
  */
 public class CarrosDataBase implements DBCarrosInterface {
-    private final ConcurrentHashMap<String, Carro> carros;
+    private ConcurrentHashMap<String, Carro> carros;
 
     public CarrosDataBase() throws RemoteException {
         carros = new ConcurrentHashMap<>();

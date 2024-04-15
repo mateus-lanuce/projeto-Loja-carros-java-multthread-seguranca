@@ -4,21 +4,23 @@ import apps.Categoria;
 import apps.Client.Model.ClientModel;
 import apps.Client.View.ClientView;
 import apps.Records.Carro;
+import apps.Records.IpPort;
 import apps.Records.User;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ClientController {
 
-    private ClientModel model;
-    private ClientView view;
+    private final ClientModel model;
+    private final ClientView view;
 
     private User Client;
     private boolean isLogged = false;
     private boolean stop = false;
 
-    public ClientController() {
-        this.model = new ClientModel();
+    public ClientController(ArrayList<IpPort> ports, int idPreferencia) {
+        this.model = new ClientModel(ports, idPreferencia);
         this.view = new ClientView();
         this.start();
     }

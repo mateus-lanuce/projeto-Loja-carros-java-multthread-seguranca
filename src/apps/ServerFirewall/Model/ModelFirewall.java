@@ -16,7 +16,7 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ModelFirewall implements ServerGetawayInterface {
+public class ModelFirewall {
     ServerLojaInterface serverLojaConnection;
     UsersInterface authConnection;
 
@@ -26,68 +26,68 @@ public class ModelFirewall implements ServerGetawayInterface {
     int currentConection;
 
     public ModelFirewall(ArrayList<IpPort> portsDB, int idPreferenciaDB, IpPort AuthServer) {
+        this.replicDBsConnected = new LinkedList<>();
+        this.replicDBsTotal = new LinkedList<>();
         this.connectDB(portsDB);
         this.connectAuth(AuthServer);
         this.idPreferencia = idPreferenciaDB;
-        this.replicDBsConnected = new LinkedList<>();
-        this.replicDBsTotal = new LinkedList<>();
         validateReplicas();
     }
-                         @Override
+                         
     public Carro adicionar(Carro carro) throws IllegalArgumentException, RemoteException {
         this.validateReplicas();
         return serverLojaConnection.adicionar(carro);
     }
 
-    @Override
+    
     public Carro remover(String renavam) throws IllegalArgumentException, RemoteException {
         this.validateReplicas();
         return serverLojaConnection.remover(renavam);
     }
 
-    @Override
+    
     public LinkedList<Carro> removerPorNome(String nome) throws RemoteException {
         this.validateReplicas();
         return serverLojaConnection.removerPorNome(nome);
     }
 
-    @Override
+    
     public LinkedList<Carro> getCarros(Categoria categoria) throws RemoteException {
         this.validateReplicas();
         return serverLojaConnection.getCarros(categoria);
     }
 
-    @Override
+    
     public LinkedList<Carro> getCarrosByNome(String nome) throws RemoteException {
         this.validateReplicas();
         return serverLojaConnection.getCarrosByNome(nome);
     }
 
-    @Override
+    
     public Carro getCarroByRenavam(String renavam) throws RemoteException {
         this.validateReplicas();
         return serverLojaConnection.getCarroByRenavam(renavam);
     }
 
-    @Override
+    
     public Carro alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
         this.validateReplicas();
         return serverLojaConnection.alterar(renavam, carro);
     }
 
-    @Override
+    
     public int getQuantidade() throws RemoteException {
         this.validateReplicas();
         return serverLojaConnection.getQuantidade();
     }
 
-    @Override
+    
     public User login(String email, String password) throws RemoteException {
         this.validateReplicas();
         return authConnection.login(email, password);
     }
 
-    @Override
+    
     public void addUser(User user) throws RemoteException {
         this.validateReplicas();
         authConnection.addUser(user);
@@ -115,12 +115,7 @@ public class ModelFirewall implements ServerGetawayInterface {
     }
 
     private int newMainConnection(){
-        if(idPreferencia > replicDBsConnected.size()){
-
-            if (replicDBsConnected.size() == 1) {
-                return 0;
-            }
-
+        if(idPreferencia >= replicDBsConnected.size()){
             this.currentConection = replicDBsConnected.size() - 1;
             return  currentConection;
         }
@@ -131,9 +126,9 @@ public class ModelFirewall implements ServerGetawayInterface {
         for (IpPort port : ports){
             try {
                 Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());
-                ServerDBInterface serverDB = (ServerDBInterface) registryDB.lookup("Lojas");
-                replicDBsTotal.add((ServerLojaInterface) serverDB);
-                System.out.println("Conexão com o servidor "+ port.ip() + " feita na porta " + port.port());
+                ServerLojaInterface serverDB = (ServerLojaInterface) registryDB.lookup("Lojas");
+                replicDBsTotal.add(serverDB);
+                System.out.println("Conexão com o servidor de loja "+ port.ip() + " feita na porta " + port.port());
             } catch (RemoteException | NotBoundException e) {
                 System.out.println("Erro ao conectar com o servidor "+ port.ip() + " na porta " + port.port());
                 e.printStackTrace();

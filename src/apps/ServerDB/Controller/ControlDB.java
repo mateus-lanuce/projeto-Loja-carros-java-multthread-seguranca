@@ -19,8 +19,10 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    LinkedList<ServerDBInterface> replicDBsTotal;
-    LinkedList<ServerDBInterface> replicDBsConnected;
+    private LinkedList<ServerDBInterface> replicDBsTotal;
+    private LinkedList<ServerDBInterface> replicDBsConnected;
+    private ArrayList<IpPort> ports;
+
 
     final CarrosDataBase carrosDataBase;
 
@@ -28,16 +30,9 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
         super();
         this.replicDBsTotal = new LinkedList<>();
         this.replicDBsConnected = new LinkedList<>();
+        this.ports = ports;
         this.connectDB(ports);
         this.validateReplicas();
-        carrosDataBase = new CarrosDataBase();
-    }
-
-    public ControlDB() throws RemoteException {
-        super();
-        this.replicDBsTotal = new LinkedList<>();
-        this.replicDBsConnected = new LinkedList<>();
-        validateReplicas();
         carrosDataBase = new CarrosDataBase();
     }
 
@@ -55,6 +50,11 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
                 e.printStackTrace();
             }
         });
+
+        if (replicDBsConnected.isEmpty()) {
+            System.out.println("Nenhuma replica disponivel tentando reconectar");
+            this.connectDB(ports);
+        }
     }
 
     /**
@@ -81,10 +81,16 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
      * o retorno deve ser feito quando pelo menos uma replica tiver salvo o dado.
      * mas deve ser feito de forma assíncrona nas demais replicas.
      * @param carro O carro a ser adicionado.
+     * @param sync se a operação deve ser sincronizada.
      */
-    private synchronized Carro sync_adicionar(Carro carro) throws IllegalArgumentException {
+    private Carro sync_adicionar(Carro carro, boolean sync) throws IllegalArgumentException {
         //adiciona o carro na replica local
         Carro carroLocal = carrosDataBase.adicionar(carro);
+
+        // se a operação está vindo de uma replica, não é necessário sincronizar com as demais
+        if (!sync) {
+            return carroLocal;
+        }
 
         // valida as replicas conectadas
         validateReplicas();
@@ -93,7 +99,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
         Thread t = new Thread(() -> {
             try {
                 //TODO: rever a logica para o caso de falha na primeira replica
-                replicDBsConnected.get(0).adicionar(carro);
+                replicDBsConnected.get(0).adicionar(carro, false);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -109,7 +115,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
             replicDBsConnected.stream().skip(1).forEach(replica -> {
                 Thread t2 = new Thread(() -> {
                     try {
-                        replica.adicionar(carro);
+                        replica.adicionar(carro, false);
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -252,7 +258,12 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
     @Override
     public Carro adicionar(Carro carro) throws IllegalArgumentException, RemoteException {
         //a sincronizacao deve aguardar que o dado tenha sido salvo em uma replica antes de retornar
-        return sync_adicionar(carro);
+        return sync_adicionar(carro, true);
+    }
+
+    @Override
+    public Carro adicionar(Carro carro, boolean sync) throws IllegalArgumentException, RemoteException {
+        return sync_adicionar(carro, sync);
     }
     @Override
     public Carro remover(String renavam) throws IllegalArgumentException, RemoteException {

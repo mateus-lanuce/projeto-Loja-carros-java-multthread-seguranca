@@ -1,13 +1,15 @@
 package apps.ServerGetaway;
 
 import apps.Categoria;
-import apps.Interfaces.ServerDB.DBCarrosInterface;
+import apps.Interfaces.ServerDB.ServerDBInterface;
+import apps.Interfaces.ServerFirewall.ServerFirewallInterface;
 import apps.Interfaces.ServerGetawayInterface;
-import apps.Interfaces.UsersInterface;
+import apps.Interfaces.ServerLoja.ServerLojaInterface;
 import apps.Records.Carro;
 import apps.Records.IpPort;
 import apps.Records.User;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -17,38 +19,40 @@ import java.util.LinkedList;
 
 public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayInterface {
 
-    private Registry registryDB;
-    private DBCarrosInterface serverDB;
+    private ServerFirewallInterface serverFirewallConnection;
 
-    private Registry registryAuth;
-    private UsersInterface serverAuth;
+    LinkedList<ServerFirewallInterface> replicFirewallConnected;
+    LinkedList<ServerFirewallInterface> replicFirewallTotal;
+    int idPreferencia;
+    int currentConection;
 
-    public ServerGetaway() throws RemoteException {
+    public ServerGetaway(ArrayList<IpPort> portsDB, int idPreferenciaFirewall) throws RemoteException {
         super();
         try {
-             //se conecta com o servidor de banco de dados
-             this.connectDB();
-                //se conecta com o servidor de autenticação
-            this.connectAuth();
+            this.replicFirewallConnected = new LinkedList<>();
+            this.replicFirewallTotal = new LinkedList<>();
+            this.connectFirewall(portsDB);
+            this.idPreferencia = idPreferenciaFirewall;
+            validateReplicas();
         } catch (Exception e) {
-             e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
     @Override
     public Carro adicionar(Carro carro) throws RemoteException, IllegalArgumentException {
-       return serverDB.adicionar(carro);
+       return serverFirewallConnection.adicionar(carro);
     }
 
     @Override
     public Carro remover(String renavam) throws RemoteException, IllegalArgumentException {
-        return serverDB.remover(renavam);
+        return serverFirewallConnection.remover(renavam);
     }
 
     @Override
     public LinkedList<Carro> removerPorNome(String nome) throws RemoteException, IllegalArgumentException {
 
-        LinkedList<Carro> carrosRemovidos = serverDB.removerPorNome(nome);
+        LinkedList<Carro> carrosRemovidos = serverFirewallConnection.removerPorNome(nome);
 
         if (carrosRemovidos == null) {
             throw new IllegalArgumentException("não existe um carro com o nome " + nome);
@@ -60,7 +64,7 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     @Override
     public LinkedList<Carro> getCarros(Categoria categoria) throws RemoteException, RuntimeException {
 
-        LinkedList<Carro> carros = serverDB.getCarros(categoria);
+        LinkedList<Carro> carros = serverFirewallConnection.getCarros(categoria);
 
         if (carros == null && categoria != null) {
             throw new RuntimeException("não existem carros com a categoria " + categoria);
@@ -74,7 +78,7 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     @Override
     public LinkedList<Carro> getCarrosByNome(String nome) throws RemoteException, IllegalArgumentException {
 
-            LinkedList<Carro> carros = serverDB.getCarrosByNome(nome);
+            LinkedList<Carro> carros = serverFirewallConnection.getCarrosByNome(nome);
 
             if (carros == null) {
                 throw new IllegalArgumentException("não existem carros com o nome " + nome);
@@ -85,13 +89,13 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
 
     @Override
     public Carro alterar(String renavam, Carro carro) throws RemoteException, IllegalArgumentException {
-        return serverDB.alterar(renavam, carro);
+        return serverFirewallConnection.alterar(renavam, carro);
     }
 
     @Override
     public int getQuantidade() throws RemoteException {
         try {
-            return serverDB.getQuantidade();
+            return serverFirewallConnection.getQuantidade();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
@@ -101,7 +105,7 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     @Override
     public Carro getCarroByRenavam(String renavam) {
         try {
-            return serverDB.getCarroByRenavam(renavam);
+            return serverFirewallConnection.getCarroByRenavam(renavam);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -111,7 +115,7 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     @Override
     public User login(String email, String senha) {
         try {
-            return serverAuth.login(email, senha);
+            return serverFirewallConnection.login(email, senha);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -121,41 +125,77 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     @Override
     public void addUser(User user) {
         try {
-            serverAuth.addUser(user);
+            serverFirewallConnection.addUser(user);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
+    private void validateReplicas() {
+        this.replicFirewallConnected.clear();
+        this.replicFirewallTotal.forEach(replica -> {
+            try {
+                if (replica.isAlive()) {
+                    replicFirewallConnected.add(replica);
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
 
-    private void connectDB() {
-        try {
-            registryDB = LocateRegistry.getRegistry(1099);
-            serverDB = (DBCarrosInterface) registryDB.lookup("Carros");
-            System.out.println("Conexão com o servidor de banco de dados estabelecida");
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (replicFirewallConnected.isEmpty()) {
+            System.out.println("Nenhuma replica de firewall disponivel");
+        } else {
+            this.currentConection = newMainConnection();
+            this.serverFirewallConnection = replicFirewallConnected.get(currentConection);
+        }
+
+    }
+
+    private int newMainConnection(){
+        if(idPreferencia >= replicFirewallConnected.size()){
+
+            if (replicFirewallConnected.size() == 1) {
+                return 0;
+            }
+
+            this.currentConection = replicFirewallConnected.size() - 1;
+            return  currentConection;
+        }
+        return idPreferencia;
+    }
+
+    private void connectFirewall(ArrayList<IpPort> ports) {
+        for (IpPort port : ports){
+            try {
+                Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());
+                ServerFirewallInterface serverFirewall = (ServerFirewallInterface) registryDB.lookup("Firewall");
+                replicFirewallTotal.add(serverFirewall);
+                System.out.println("Conexão com o servidor de firewall "+ port.ip() + " feita na porta " + port.port());
+            } catch (RemoteException | NotBoundException e) {
+                System.out.println("Erro ao conectar com o servidor de firewall "+ port.ip() + " na porta " + port.port());
+                e.printStackTrace();
+            }
         }
     }
 
-    private void connectAuth() {
-        try {
-            registryAuth = LocateRegistry.getRegistry(1100);
-            serverAuth = (UsersInterface) registryAuth.lookup("Users");
-            System.out.println("Conexão com o servidor de autenticação estabelecida");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public boolean isAlive() throws RemoteException {
+        return true;
     }
 
     public static void main(String[] args) {
 
         try {
-            //cria o objeto remoto
-            ServerGetawayInterface serverGetaway = new ServerGetaway();
+            ArrayList<IpPort> ports = new ArrayList<>();
+            IpPort port1 = new IpPort("", 1121);
+            ports.add(port1);
 
-            Registry registry = LocateRegistry.createRegistry(1101);
+            //cria o objeto remoto
+            ServerGetawayInterface serverGetaway = new ServerGetaway(ports, 1);
+
+            Registry registry = LocateRegistry.createRegistry(1131);
 
             //registra o objeto remoto
             registry.rebind("Getaway", serverGetaway);
@@ -247,5 +287,4 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
 //        }
 
     }
-
 }

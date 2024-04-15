@@ -29,10 +29,10 @@ public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterf
 
     public ControlLoja(ArrayList<IpPort> ports, int idPreferencia) throws RemoteException {
         super();
-        this.connectDB(ports);
-        this.idPreferencia = idPreferencia;
         this.replicDBsConnected = new LinkedList<>();
         this.replicDBsTotal = new LinkedList<>();
+        this.connectDB(ports);
+        this.idPreferencia = idPreferencia;
         validateReplicas();
     }
 
@@ -42,6 +42,7 @@ public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterf
             try {
                 if (replica.isAlive()) {
                     replicDBsConnected.add(replica);
+                    System.out.println("Conexão com o servidor " + replica + " feita com sucesso");
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -61,7 +62,7 @@ public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterf
     }
 
     private int newMainConnection(){
-        if(idPreferencia > replicDBsConnected.size()){
+        if(idPreferencia >= replicDBsConnected.size()){
             this.currentConection = replicDBsConnected.size() - 1;
             return  currentConection;
         }
@@ -71,7 +72,6 @@ public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterf
     private void connectDB(ArrayList<IpPort> ports) {
         for (IpPort port : ports){
             try {
-
                 Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());
                 ServerDBInterface serverDB = (ServerDBInterface) registryDB.lookup("Carros");
                 replicDBsTotal.add(serverDB);
