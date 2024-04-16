@@ -70,7 +70,7 @@ public class ClientModel {
     }
 
     private int newMainConnection(){
-        if(idPreferencia > replicGetawayConnected.size()){
+        if(idPreferencia >= replicGetawayConnected.size()){
 
             if (replicGetawayConnected.size() == 1) {
                 return 0;

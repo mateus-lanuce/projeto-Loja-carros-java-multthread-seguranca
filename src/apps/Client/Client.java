@@ -10,7 +10,7 @@ public class Client {
     public static void main(String[] args) {
 
         ArrayList<IpPort> ports = new ArrayList<>();
-        ports.add(new IpPort("localhost", 1099));
+        ports.add(new IpPort("localhost", 1131));
 
         ClientController controller = new ClientController(ports, 1);
 

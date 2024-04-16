@@ -131,16 +131,21 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
         return carroLocal;
     }
 
-    private synchronized LinkedList<Carro> sync_removerPorNome(String nome) throws RemoteException {
+    private LinkedList<Carro> sync_removerPorNome(String nome, boolean sync) throws RemoteException {
         //remove o carro na replica local
         LinkedList<Carro> carros = carrosDataBase.removerPorNome(nome);
+
+        // se a operação está vindo de uma replica, não é necessário sincronizar com as demais
+        if (!sync) {
+            return carros;
+        }
 
         validateReplicas();
 
         Thread t = new Thread(() -> {
             try {
                 //TODO: rever a logica para o caso de falha na primeira replica
-                replicDBsConnected.get(0).removerPorNome(nome);
+                replicDBsConnected.get(0).removerPorNome(nome, false);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -156,7 +161,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
             replicDBsConnected.stream().skip(1).forEach(replica -> {
                 Thread t2 = new Thread(() -> {
                     try {
-                        replica.removerPorNome(nome);
+                        replica.removerPorNome(nome, false);
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -171,16 +176,22 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
 
         return carros;
     }
-    private synchronized Carro sync_remover(String renavam) throws IllegalArgumentException, RemoteException {
+
+    private Carro sync_remover(String renavam, boolean sync) throws IllegalArgumentException, RemoteException {
         //remove o carro na replica local
         Carro carroLocal = carrosDataBase.remover(renavam);
+
+        // se a operação está vindo de uma replica, não é necessário sincronizar com as demais
+        if (!sync) {
+            return carroLocal;
+        }
 
         validateReplicas();
 
         Thread t = new Thread(() -> {
             try {
                 //TODO: rever a logica para o caso de falha na primeira replica
-                replicDBsConnected.get(0).remover(renavam);
+                replicDBsConnected.get(0).remover(renavam, false);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -196,7 +207,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
             replicDBsConnected.stream().skip(1).forEach(replica -> {
                 Thread t2 = new Thread(() -> {
                     try {
-                        replica.remover(renavam);
+                        replica.remover(renavam, false);
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -212,9 +223,14 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
         return carroLocal;
     }
 
-    private synchronized Carro sync_alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
+    private Carro sync_alterar(String renavam, Carro carro, boolean sync) throws IllegalArgumentException, RemoteException {
         //adiciona o carro na replica local
         Carro carroLocal = carrosDataBase.alterar(renavam, carro);
+
+        // se a operação está vindo de uma replica, não é necessário sincronizar com as demais
+        if (!sync) {
+            return carroLocal;
+        }
 
         // valida as replicas conectadas
         validateReplicas();
@@ -223,7 +239,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
         Thread t = new Thread(() -> {
             try {
                 //TODO: rever a logica para o caso de falha na primeira replica
-                replicDBsConnected.get(0).alterar(renavam, carro);
+                replicDBsConnected.get(0).alterar(renavam, carro, false);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -239,7 +255,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
             replicDBsConnected.stream().skip(1).forEach(replica -> {
                 Thread t2 = new Thread(() -> {
                     try {
-                        replica.alterar(renavam, carro);
+                        replica.alterar(renavam, carro, false);
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -265,14 +281,25 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
     public Carro adicionar(Carro carro, boolean sync) throws IllegalArgumentException, RemoteException {
         return sync_adicionar(carro, sync);
     }
+
     @Override
     public Carro remover(String renavam) throws IllegalArgumentException, RemoteException {
-        return sync_remover(renavam);
+        return sync_remover(renavam, true);
+    }
+
+    @Override
+    public Carro remover(String renavam, boolean sync) throws IllegalArgumentException, RemoteException {
+        return sync_remover(renavam, sync);
     }
 
     @Override
     public LinkedList<Carro> removerPorNome(String nome) throws RemoteException {
-        return sync_removerPorNome(nome);
+        return sync_removerPorNome(nome, true);
+    }
+
+    @Override
+    public LinkedList<Carro> removerPorNome(String nome, boolean sync) throws RemoteException {
+        return sync_removerPorNome(nome, sync);
     }
 
     @Override
@@ -292,7 +319,12 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
 
     @Override
     public Carro alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
-        return sync_alterar(renavam, carro);
+        return sync_alterar(renavam, carro, true);
+    }
+
+    @Override
+    public Carro alterar(String renavam, Carro carro, boolean sync) throws IllegalArgumentException, RemoteException {
+        return sync_alterar(renavam, carro, sync);
     }
 
     @Override
