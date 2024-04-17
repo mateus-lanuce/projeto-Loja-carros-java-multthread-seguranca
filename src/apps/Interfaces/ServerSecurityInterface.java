@@ -5,7 +5,7 @@ import apps.Records.PublicKey;
 
 import java.rmi.Remote;
 
-public interface ServerSecurity extends Remote {
+public interface ServerSecurityInterface extends Remote {
 
     /**
      * @param clientSalt The client salt to be set.

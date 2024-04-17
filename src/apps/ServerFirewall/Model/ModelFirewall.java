@@ -1,9 +1,7 @@
 package apps.ServerFirewall.Model;
 
 import apps.Categoria;
-import apps.Interfaces.ServerDB.ServerDBInterface;
-import apps.Interfaces.ServerGetawayInterface;
-import apps.Interfaces.ServerLoja.ServerLojaInterface;
+import apps.Interfaces.ServerLoja.ServerLojaInterfaceInterface;
 import apps.Interfaces.UsersInterface;
 import apps.MessageType;
 import apps.Records.*;
@@ -16,15 +14,14 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 public class ModelFirewall {
-    ServerLojaInterface serverLojaConnection;
+    ServerLojaInterfaceInterface serverLojaConnection;
     UsersInterface authConnection;
 
-    LinkedList<ServerLojaInterface> replicDBsConnected;
-    LinkedList<ServerLojaInterface> replicDBsTotal;
+    LinkedList<ServerLojaInterfaceInterface> replicDBsConnected;
+    LinkedList<ServerLojaInterfaceInterface> replicDBsTotal;
     int idPreferencia;
     int currentConection;
 
@@ -49,6 +46,54 @@ public class ModelFirewall {
         this.connectAuth(AuthServer);
         this.idPreferencia = idPreferenciaDB;
         validateReplicas();
+
+        //adicionar carros iniciais
+        //adicionar dados de teste 12 carros de 3 categorias
+        Carro carro1 = new Carro("123", "Fusca", Categoria.ECONOMICO, 1970, 10000);
+        Carro carro2 = new Carro("124", "Fiat Uno", Categoria.ECONOMICO, 1990, 15000);
+        Carro carro3 = new Carro("125", "Kombi", Categoria.ECONOMICO, 1980, 20000);
+
+        Carro carro4 = new Carro("126", "Gol", Categoria.INTERMEDIARIO, 2000, 25000);
+        Carro carro5 = new Carro("127", "Palio", Categoria.INTERMEDIARIO, 2005, 30000);
+        Carro carro6 = new Carro("128", "Celta", Categoria.INTERMEDIARIO, 2005, 30000);
+
+        Carro carro7 = new Carro("129", "Civic", Categoria.EXECUTIVO, 2010, 50000);
+        Carro carro8 = new Carro("130", "Corolla", Categoria.EXECUTIVO, 2015, 60000);
+        Carro carro9 = new Carro("131", "Fusion", Categoria.EXECUTIVO, 2015, 60000);
+
+        Carro carro10 = new Carro("132", "BMW 320", Categoria.EXECUTIVO, 2020, 120000);
+        Carro carro11 = new Carro("133", "Mercedes Classe C", Categoria.EXECUTIVO, 2020, 150000);
+        Carro carro12 = new Carro("134", "Audi A4", Categoria.EXECUTIVO, 2020, 130000);
+
+        //adicionar dados de teste 3 usuários
+        User jorgeClient = new User("jorge@jorge.com", "123", true);
+        User anaAdmin = new User("ana@ana.com", "123", false);
+        User pedroClient = new User("pedro@exemplo.com", "456", true);
+        User carlaAdmin = new User("carla@exemplo.com", "789", false);
+        User tiagoClient = new User("tiago@exemplo.com", "101112", true);
+
+        try {
+            this.adicionar(carro1);
+            this.adicionar(carro2);
+            this.adicionar(carro3);
+            this.adicionar(carro4);
+            this.adicionar(carro5);
+            this.adicionar(carro6);
+            this.adicionar(carro7);
+            this.adicionar(carro8);
+            this.adicionar(carro9);
+            this.adicionar(carro10);
+            this.adicionar(carro11);
+            this.adicionar(carro12);
+
+            this.addUser(jorgeClient);
+            this.addUser(anaAdmin);
+            this.addUser(pedroClient);
+            this.addUser(carlaAdmin);
+            this.addUser(tiagoClient);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
                          
     public Carro adicionar(Carro carro) throws IllegalArgumentException, RemoteException {
@@ -155,7 +200,7 @@ public class ModelFirewall {
         for (IpPort port : ports){
             try {
                 Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());
-                ServerLojaInterface serverDB = (ServerLojaInterface) registryDB.lookup("Lojas");
+                ServerLojaInterfaceInterface serverDB = (ServerLojaInterfaceInterface) registryDB.lookup("Lojas");
                 replicDBsTotal.add(serverDB);
                 System.out.println("Conexão com o servidor de loja "+ port.ip() + " feita na porta " + port.port());
             } catch (RemoteException | NotBoundException e) {

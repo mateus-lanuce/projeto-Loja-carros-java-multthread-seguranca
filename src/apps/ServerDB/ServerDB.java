@@ -14,12 +14,12 @@ public class ServerDB {
             ArrayList<IpPort> replicsPorts = new ArrayList<>();
 
             IpPort port1 = new IpPort("", 1100);
-            IpPort port2 = new IpPort("", 1101);
-            IpPort port3 = new IpPort("", 1102);
+//            IpPort port2 = new IpPort("", 1101);
+//            IpPort port3 = new IpPort("", 1102);
 
             replicsPorts.add(port1);
-            replicsPorts.add(port2);
-            replicsPorts.add(port3);
+//            replicsPorts.add(port2);
+//            replicsPorts.add(port3);
 
             //remover a porta que é a mesma do servidor
             replicsPorts.removeIf(porta -> porta.port() == port);

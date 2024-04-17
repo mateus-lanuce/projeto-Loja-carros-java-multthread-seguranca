@@ -24,13 +24,14 @@ public record Carro(String renavam, String nome, Categoria categoria, int anoFab
         }
     }
 
-    //formato de impressão
-    @Override
-    public String toString() {
-        return "\nRenavam: " + renavam + "\n"
-                + "Nome: " + nome + "\n"
-                + "Categoria: " + categoria + "\n"
-                + "Ano de fabricação: " + anoFabricacao + "\n"
-                + "Preço: " + String.format("R$ %.2f", preco);
+    // return a Carro object from a string in the format Carro[renavam=renavam, nome=nome, categoria=categoria, anoFabricacao=anoFabricacao, preco=preco]
+    public static Carro fromString(String carroString) {
+        String[] parts = carroString.split(",");
+        String renavam = parts[0].split("=")[1];
+        String nome = parts[1].split("=")[1];
+        Categoria categoria = Categoria.valueOf(parts[2].split("=")[1]);
+        int anoFabricacao = Integer.parseInt(parts[3].split("=")[1]);
+        double preco = Double.parseDouble(parts[4].split("=")[1].replace("]", ""));
+        return new Carro(renavam, nome, categoria, anoFabricacao, preco);
     }
 }

@@ -1,9 +1,8 @@
 package apps.ServerLoja.Controller;
 
 import apps.Categoria;
-import apps.Interfaces.ServerDB.DBCarrosInterface;
 import apps.Interfaces.ServerDB.ServerDBInterface;
-import apps.Interfaces.ServerLoja.ServerLojaInterface;
+import apps.Interfaces.ServerLoja.ServerLojaInterfaceInterface;
 import apps.Records.Carro;
 import apps.Records.IpPort;
 import apps.Records.Message;
@@ -13,7 +12,6 @@ import apps.Utils.RSA;
 
 import javax.crypto.SecretKey;
 import java.io.Serial;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -22,7 +20,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterface {
+public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterfaceInterface {
     @Serial
     private static final long serialVersionUID = 1L;
 
