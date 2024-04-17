@@ -40,6 +40,9 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
      * funcao de validação da conexão das replicas
      */
     private void validateReplicas() {
+
+        this.connectDB(ports);
+
         replicDBsConnected.clear();
         replicDBsTotal.forEach(replica -> {
             try {
@@ -51,10 +54,10 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
             }
         });
 
-        if (replicDBsConnected.isEmpty()) {
-            System.out.println("Nenhuma replica disponivel tentando reconectar");
-            this.connectDB(ports);
-        }
+//        if (replicDBsConnected.isEmpty()) {
+//            System.out.println("Nenhuma replica disponivel tentando reconectar");
+//            this.connectDB(ports);
+//        }
     }
 
     /**
@@ -62,6 +65,7 @@ public class ControlDB extends UnicastRemoteObject implements ServerDBInterface 
      * @param ports lista de portas para conexão
      */
     private void connectDB(ArrayList<IpPort> ports) {
+        replicDBsTotal.clear();
         for (IpPort port : ports){
             try {
                 Registry registryDB = LocateRegistry.getRegistry(port.ip(), port.port());

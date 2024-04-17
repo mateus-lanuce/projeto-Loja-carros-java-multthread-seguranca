@@ -112,13 +112,12 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
 
 
     public User login(String email, String senha) {
-//        try {
-//            return serverFirewallConnection.login(email, senha);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-        return null;
+        try {
+            return serverFirewallConnection.login(email, senha);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -188,7 +187,7 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
 
         try {
             ArrayList<IpPort> ports = new ArrayList<>();
-            IpPort port1 = new IpPort("", 1121);
+            IpPort port1 = new IpPort("26.42.93.107", 1121);
             ports.add(port1);
 
             //cria o objeto remoto
