@@ -420,9 +420,8 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
             }
 
             //transformar a mensagem em um objeto user
-            User userObject = User.fromString(response.message());
 
-            return userObject;
+            return User.fromString(response.message());
 
         } catch (Exception e) {
             e.printStackTrace();

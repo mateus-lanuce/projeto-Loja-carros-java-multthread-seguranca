@@ -19,6 +19,8 @@ public class ClientController {
     private boolean isLogged = false;
     private boolean stop = false;
 
+    private int tentivaLogin = 0;
+
     public ClientController(ArrayList<IpPort> ports, int idPreferencia) {
         this.model = new ClientModel(ports, idPreferencia);
         this.view = new ClientView();
@@ -35,9 +37,16 @@ public class ClientController {
                 view.showMensagem("Usuário logado com sucesso!");
             } else {
                 view.showMensagem("Usuário ou senha inválidos, tentar novamente...");
+                tentivaLogin++;
                 //parar o programa por 2 segundos
                 delay(2000);
                 view.limparTela();
+            }
+
+            if(tentivaLogin == 3){
+                view.showErro("Número máximo de tentativas excedido, aguarde 10 minutos para tentar novamente...");
+                delay(600000);
+                tentivaLogin = 0;
             }
         }
 
