@@ -122,11 +122,6 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
     }
 
     @Override
-    public Message login(Message userString) throws RemoteException {
-        return null;
-    }
-
-    @Override
     public void addUser(User user) {
         try {
             serverFirewallConnection.addUser(user);
@@ -292,28 +287,4 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
 
     }
 
-    @Override
-    public void setClientSalt(String clientSalt) throws Exception {
-
-    }
-
-    @Override
-    public String getServerSalt() throws Exception {
-        return "";
-    }
-
-    @Override
-    public void setClientPublicKey(PublicKey clientPublicKey) throws Exception {
-
-    }
-
-    @Override
-    public PublicKey getServerPublicKey() throws Exception {
-        return null;
-    }
-
-    @Override
-    public Message serverLogin(Message message) throws Exception {
-        return null;
-    }
 }

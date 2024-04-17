@@ -21,7 +21,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ControllerFirewall extends UnicastRemoteObject  {
+public class ControllerFirewall extends UnicastRemoteObject implements ServerFirewallInterface {
     private final ModelFirewall model;
 
     public ControllerFirewall(ArrayList<IpPort> portsDB, int idPreferenciaDB, IpPort AuthServer) throws RemoteException {
