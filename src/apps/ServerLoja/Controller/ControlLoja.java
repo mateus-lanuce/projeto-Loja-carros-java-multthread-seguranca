@@ -6,8 +6,13 @@ import apps.Interfaces.ServerDB.ServerDBInterface;
 import apps.Interfaces.ServerLoja.ServerLojaInterface;
 import apps.Records.Carro;
 import apps.Records.IpPort;
+import apps.Records.Message;
+import apps.Records.PublicKey;
 import apps.ServerLoja.Model.ModelCarrosLoja;
+import apps.Utils.RSA;
 
+import javax.crypto.SecretKey;
+import java.io.Serial;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -18,6 +23,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterface {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private ModelCarrosLoja model;
 
     LinkedList<ServerDBInterface> replicDBsConnected;
@@ -27,8 +35,27 @@ public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterf
     int idPreferencia;
     int currentConection;
 
+    //segurança
+    /**
+     * salt para criptografia vai ser recebido do cliente na hora do login
+     * será usado no AES para critografar e descriptografar baseado na senha da conta e no salt recebido
+     */
+    String clientSalt;
+    /**
+     * salt enviado para o cliente na hora do login para garantir a autenticidade das mensagens
+     */
+    String serverSalt;
+    SecretKey secretKey;
+    private RSA rsa = new RSA();
+
+    private PublicKey publicKeyClient;
+
+    private boolean isLogged = false;
+    private String password;
+
     public ControlLoja(ArrayList<IpPort> ports, int idPreferencia) throws RemoteException {
         super();
+        this.password = "senha";
         this.replicDBsConnected = new LinkedList<>();
         this.replicDBsTotal = new LinkedList<>();
         this.connectDB(ports);
@@ -127,5 +154,30 @@ public class ControlLoja extends UnicastRemoteObject implements ServerLojaInterf
     @Override
     public boolean isAlive() throws RemoteException {
         return true;
+    }
+
+    @Override
+    public void setClientSalt(String clientSalt) throws Exception {
+
+    }
+
+    @Override
+    public String getServerSalt() throws Exception {
+        return "";
+    }
+
+    @Override
+    public void setClientPublicKey(PublicKey clientPublicKey) throws Exception {
+
+    }
+
+    @Override
+    public PublicKey getServerPublicKey() throws Exception {
+        return null;
+    }
+
+    @Override
+    public Message serverLogin(Message message) throws Exception {
+        return null;
     }
 }

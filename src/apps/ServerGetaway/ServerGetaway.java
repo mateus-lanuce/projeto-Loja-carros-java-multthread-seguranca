@@ -5,9 +5,7 @@ import apps.Interfaces.ServerDB.ServerDBInterface;
 import apps.Interfaces.ServerFirewall.ServerFirewallInterface;
 import apps.Interfaces.ServerGetawayInterface;
 import apps.Interfaces.ServerLoja.ServerLojaInterface;
-import apps.Records.Carro;
-import apps.Records.IpPort;
-import apps.Records.User;
+import apps.Records.*;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -112,14 +110,20 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
         }
     }
 
-    @Override
+
     public User login(String email, String senha) {
-        try {
-            return serverFirewallConnection.login(email, senha);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+//        try {
+//            return serverFirewallConnection.login(email, senha);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+        return null;
+    }
+
+    @Override
+    public Message login(Message userString) throws RemoteException {
+        return null;
     }
 
     @Override
@@ -286,5 +290,30 @@ public class ServerGetaway extends UnicastRemoteObject implements ServerGetawayI
 //            e.printStackTrace();
 //        }
 
+    }
+
+    @Override
+    public void setClientSalt(String clientSalt) throws Exception {
+
+    }
+
+    @Override
+    public String getServerSalt() throws Exception {
+        return "";
+    }
+
+    @Override
+    public void setClientPublicKey(PublicKey clientPublicKey) throws Exception {
+
+    }
+
+    @Override
+    public PublicKey getServerPublicKey() throws Exception {
+        return null;
+    }
+
+    @Override
+    public Message serverLogin(Message message) throws Exception {
+        return null;
     }
 }

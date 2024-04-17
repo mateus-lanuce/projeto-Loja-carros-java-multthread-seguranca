@@ -1,5 +1,6 @@
 package apps.Interfaces.ServerDB;
 
+import apps.Interfaces.ServerSecurity;
 import apps.Records.Carro;
 
 import java.rmi.Remote;

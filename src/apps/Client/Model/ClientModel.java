@@ -82,13 +82,13 @@ public class ClientModel {
         return idPreferencia;
     }
 
-    public User autenticar(String login, String senha) {
-        try {
-            return serverGetaway.login(login, senha);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    public User autenticar(String login, String senha) {
+//        try {
+//            return serverGetaway.login(login, senha);
+//        } catch (RemoteException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     public Carro adicionar(Carro carro) {
         try {

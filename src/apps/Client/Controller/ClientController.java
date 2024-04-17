@@ -29,7 +29,7 @@ public class ClientController {
 
         while (!isLogged) {
             User user = view.login();
-            this.Client = model.autenticar(user.email(), user.password());
+//            this.Client = model.autenticar(user.email(), user.password());
             if (this.Client != null) {
                 isLogged = true;
                 view.showMensagem("Usuário logado com sucesso!");

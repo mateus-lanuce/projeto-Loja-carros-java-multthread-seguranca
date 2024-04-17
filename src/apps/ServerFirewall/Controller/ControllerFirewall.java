@@ -7,12 +7,11 @@ import apps.Interfaces.ServerFirewall.ServerFirewallInterface;
 import apps.Interfaces.ServerGetawayInterface;
 import apps.Interfaces.ServerLoja.ServerLojaInterface;
 import apps.Interfaces.UsersInterface;
-import apps.Records.Carro;
-import apps.Records.IpPort;
-import apps.Records.User;
+import apps.Records.*;
 import apps.ServerFirewall.Model.ModelFirewall;
 import apps.ServerLoja.Model.ModelCarrosLoja;
 
+import javax.security.auth.login.LoginException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -22,7 +21,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ControllerFirewall extends UnicastRemoteObject implements ServerFirewallInterface {
+public class ControllerFirewall extends UnicastRemoteObject  {
     private final ModelFirewall model;
 
     public ControllerFirewall(ArrayList<IpPort> portsDB, int idPreferenciaDB, IpPort AuthServer) throws RemoteException {
@@ -30,58 +29,92 @@ public class ControllerFirewall extends UnicastRemoteObject implements ServerFir
         this.model = new ModelFirewall(portsDB, idPreferenciaDB, AuthServer);
     }
 
-    @Override
+   
     public Carro adicionar(Carro carro) throws IllegalArgumentException, RemoteException {
         return model.adicionar(carro);
     }
 
-    @Override
+   
     public Carro remover(String renavam) throws IllegalArgumentException, RemoteException {
         return model.remover(renavam);
     }
 
-    @Override
+   
     public LinkedList<Carro> removerPorNome(String nome) throws RemoteException {
         return model.removerPorNome(nome);
     }
 
-    @Override
+   
     public LinkedList<Carro> getCarros(Categoria categoria) throws RemoteException {
         return model.getCarros(categoria);
     }
 
-    @Override
+   
     public LinkedList<Carro> getCarrosByNome(String nome) throws RemoteException {
         return model.getCarrosByNome(nome);
     }
 
-    @Override
+   
     public Carro getCarroByRenavam(String renavam) throws RemoteException {
         return model.getCarroByRenavam(renavam);
     }
 
-    @Override
+   
     public Carro alterar(String renavam, Carro carro) throws IllegalArgumentException, RemoteException {
         return model.alterar(renavam, carro);
     }
 
-    @Override
+   
     public int getQuantidade() throws RemoteException {
         return model.getQuantidade();
     }
 
-    @Override
+   
     public boolean isAlive() throws RemoteException {
         return true;
     }
 
-    @Override
+   
     public User login(String email, String password) throws RemoteException {
-        return model.login(email, password);
+        try {
+            return model.login(email, password);
+        } catch (LoginException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Override
+   
     public void addUser(User user) throws RemoteException {
         model.addUser(user);
+    }
+
+   
+    public void setClientSalt(String clientSalt) throws Exception {
+
+    }
+
+   
+    public String getServerSalt() throws Exception {
+        return "";
+    }
+
+   
+    public void setClientPublicKey(PublicKey clientPublicKey) throws Exception {
+
+    }
+
+   
+    public PublicKey getServerPublicKey() throws Exception {
+        return null;
+    }
+
+   
+    public Message serverLogin(Message message) throws Exception {
+        return null;
+    }
+
+
+    public Message encryptMessage(String message) throws Exception {
+        return null;
     }
 }
